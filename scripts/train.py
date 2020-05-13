@@ -19,6 +19,8 @@ from lib.utils import (get_folder, get_image_paths, deprecation_warning, Faceswa
                        _image_extensions)
 from plugins.plugin_loader import PluginLoader
 
+import time 
+
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
@@ -302,7 +304,10 @@ class Train():
             save_iteration = iteration % self._args.save_interval == 0
             viewer = display_func if save_iteration or self._save_now else None
             timelapse = self._timelapse if save_iteration else None
+            t_start = time.time()
             trainer.train_one_step(viewer, timelapse)
+            t_end = time.time()
+            print(" xxxxx {} xxxxx".format(t_end - t_start))
             if self._stop:
                 logger.debug("Stop received. Terminating")
                 break

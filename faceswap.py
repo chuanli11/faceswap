@@ -40,6 +40,7 @@ def _main():
     args.GuiArgs(subparser, "gui", "Launch the Faceswap Graphical User Interface")
     _PARSER.set_defaults(func=_bad_args)
     arguments = _PARSER.parse_args()
+    # print(arguments)
     arguments.func(arguments)
 
 

@@ -39,5 +39,12 @@ python faceswap.py train \
 -A ~/faceswap/data/faces/trump \
 -B ~/faceswap/data/faces/fauci \
 -m ~/faceswap/trump_fauci_model_realface/ \
--g 2 -nac -nf -it 200 -L DEBUG -bs 512
+-g 1 -nac -nf -it 200 -L DEBUG -t dfaker -bs 256
+
+rm -rf ~/faceswap/trump_fauci_model_realface/ && \
+python faceswap.py train \
+-A ~/faceswap/data/faces/trump \
+-B ~/faceswap/data/faces/fauci \
+-m ~/faceswap/trump_fauci_model_realface/ \
+-g 2 -nac -nf -it 200 -L DEBUG -t dfaker -bs 512
 ```

@@ -210,7 +210,6 @@ class Train():
             sleep(1)  # Let preview instructions flush out to logger
             logger.debug("Commencing Training")
             logger.info("Loading data, this may take a while...")
-
             if self._args.allow_growth:
                 self._set_tf_allow_growth()
             model = self._load_model()
@@ -293,6 +292,7 @@ class Train():
         trainer: :file:`plugins.train.trainer` plugin
             The requested model trainer plugin
         """
+
         logger.debug("Running Training Cycle")
         if self._args.write_image or self._args.redirect_gui or self._args.preview:
             display_func = self._show
@@ -300,6 +300,7 @@ class Train():
             display_func = None
 
         for iteration in range(0, self._args.iterations):
+            print(iteration)
             logger.trace("Training iteration: %s", iteration)
             save_iteration = iteration % self._args.save_interval == 0
             viewer = display_func if save_iteration or self._save_now else None
@@ -308,20 +309,20 @@ class Train():
             trainer.train_one_step(viewer, timelapse)
             t_end = time.time()
             print(" xxxxx {} xxxxx".format(t_end - t_start))
-            if self._stop:
-                logger.debug("Stop received. Terminating")
-                break
-            if save_iteration:
-                logger.trace("Save Iteration: (iteration: %s", iteration)
-                if self._args.pingpong:
-                    model.save_models()
-                    trainer.pingpong.switch()
-                else:
-                    model.save_models()
-            elif self._save_now:
-                logger.trace("Save Requested: (iteration: %s", iteration)
-                model.save_models()
-                self._save_now = False
+            # if self._stop:
+            #     logger.debug("Stop received. Terminating")
+            #     break
+            # if save_iteration:
+            #     logger.trace("Save Iteration: (iteration: %s", iteration)
+            #     if self._args.pingpong:
+            #         model.save_models()
+            #         trainer.pingpong.switch()
+            #     else:
+            #         model.save_models()
+            # elif self._save_now:
+            #     logger.trace("Save Requested: (iteration: %s", iteration)
+            #     model.save_models()
+            #     self._save_now = False
         logger.debug("Training cycle complete")
         model.save_models()
         trainer.clear_tensorboard()

@@ -129,6 +129,9 @@ class BackgroundGenerator(MultiThread):
     def __init__(self, generator, prefetch=1, thread_count=2,
                  queue=None, args=None, kwargs=None):
         # pylint:disable=too-many-arguments
+        thread_count=2
+        prefetch=1
+
         super().__init__(target=self._run, thread_count=thread_count)
         self.queue = queue or Queue.Queue(prefetch)
         self.generator = generator

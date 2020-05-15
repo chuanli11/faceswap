@@ -298,7 +298,8 @@ class Train():
             display_func = self._show
         else:
             display_func = None
-
+        
+        t_total = 0
         for iteration in range(0, self._args.iterations):
             print(iteration)
             logger.trace("Training iteration: %s", iteration)
@@ -308,7 +309,7 @@ class Train():
             t_start = time.time()
             trainer.train_one_step(viewer, timelapse)
             t_end = time.time()
-            print(" xxxxx {} xxxxx".format(t_end - t_start))
+            t_total += (t_end - t_start)
             # if self._stop:
             #     logger.debug("Stop received. Terminating")
             #     break
@@ -323,9 +324,12 @@ class Train():
             #     logger.trace("Save Requested: (iteration: %s", iteration)
             #     model.save_models()
             #     self._save_now = False
-        logger.debug("Training cycle complete")
-        model.save_models()
-        trainer.clear_tensorboard()
+
+        print(" Average data fetching time is {} xxxxxxxxxxxxxxxxxxx".format(t_total / self._args.iterations))
+
+        # logger.debug("Training cycle complete")
+        # model.save_models()
+        # trainer.clear_tensorboard()
         self._stop = True
 
     def _monitor(self, thread):

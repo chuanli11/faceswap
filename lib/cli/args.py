@@ -1113,6 +1113,20 @@ class TrainArgs(FaceSwapArgs):
             help="Color augmentation helps make the model less susceptible to color "
                  "differences between the A and B sets, at an increased training time cost. "
                  "Enable this option to disable color augmentation."))
+        argument_list.append(dict(
+            opts=("-data_only", "--data-only"),
+            action="store_true",
+            dest="data_only",
+            default=False,
+            group="training",
+            help="Only includes data pipeline in speed testing."))
+        argument_list.append(dict(
+            opts=("-data_syn", "--data-syn"),
+            action="store_true",
+            dest="data_syn",
+            default=False,
+            group="training",
+            help="Use synthetic data in speed testing."))                     
         return argument_list
 
 

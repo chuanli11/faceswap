@@ -203,6 +203,7 @@ class Train():
         thread.join()
         sys.stdout.flush()
         logger.debug("Ended training thread")
+        print('Job finished')
 
     def _training(self):
         """ The training process to be run inside a thread. """
@@ -298,38 +299,53 @@ class Train():
             display_func = self._show
         else:
             display_func = None
-        
+
+        # data_only = False
+        # data_syn = False
+
+        print('----------------------------------------------------------------------------------------------------')
+        print('data_only: {}, data_syn {}'.format(self._args.data_only, self._args.data_syn))
+        print('----------------------------------------------------------------------------------------------------')
+
         t_total = 0
         for iteration in range(0, self._args.iterations):
-            print(iteration)
             logger.trace("Training iteration: %s", iteration)
             save_iteration = iteration % self._args.save_interval == 0
             viewer = display_func if save_iteration or self._save_now else None
             timelapse = self._timelapse if save_iteration else None
             t_start = time.time()
-            trainer.train_one_step(viewer, timelapse)
+            trainer.train_one_step(viewer, self._args.data_only, self._args.data_syn, timelapse)
             t_end = time.time()
             t_total += (t_end - t_start)
-            # if self._stop:
-            #     logger.debug("Stop received. Terminating")
-            #     break
-            # if save_iteration:
-            #     logger.trace("Save Iteration: (iteration: %s", iteration)
-            #     if self._args.pingpong:
-            #         model.save_models()
-            #         trainer.pingpong.switch()
-            #     else:
-            #         model.save_models()
-            # elif self._save_now:
-            #     logger.trace("Save Requested: (iteration: %s", iteration)
-            #     model.save_models()
-            #     self._save_now = False
 
-        print(" Average data fetching time is {} xxxxxxxxxxxxxxxxxxx".format(t_total / self._args.iterations))
+            if not self._args.data_only:
+                if self._stop:
+                    logger.debug("Stop received. Terminating")
+                    break
+                if save_iteration:
+                    logger.trace("Save Iteration: (iteration: %s", iteration)
+                    if self._args.pingpong:
+                        model.save_models()
+                        trainer.pingpong.switch()
+                    else:
+                        model.save_models()
+                elif self._save_now:
+                    logger.trace("Save Requested: (iteration: %s", iteration)
+                    model.save_models()
+                    self._save_now = False
+        
+        if self._args.data_only:
+            print("\nAverage data fetching time is {} xxxxxxxxxxxxxxxxxxx".format(t_total / self._args.iterations))
+        else:
+            if self._args.data_syn:
+                print("\nSynthetic: Average train_one_step time on is {} xxxxxxxxxxxxxxxxxxx".format(t_total / self._args.iterations))
+            else:
+                print("\nReal: Average train_one_step time on is {} xxxxxxxxxxxxxxxxxxx".format(t_total / self._args.iterations))
 
-        # logger.debug("Training cycle complete")
-        # model.save_models()
-        # trainer.clear_tensorboard()
+            logger.debug("Training cycle complete")
+            model.save_models()
+            trainer.clear_tensorboard()
+
         self._stop = True
 
     def _monitor(self, thread):

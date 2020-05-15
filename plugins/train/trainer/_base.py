@@ -246,7 +246,7 @@ class TrainerBase():
         output = "[{}] [#{:05d}] {}".format(self._timestamp, self._model.iterations, output)
         print("\r{}".format(output), end="")
 
-    def train_one_step(self, viewer, timelapse_kwargs):
+    def train_one_step(self, viewer, data_only, data_syn, timelapse_kwargs):
         """ Running training on a batch of images for each side.
 
         Triggered from the training cycle in :class:`scripts.train.Train`.
@@ -278,38 +278,38 @@ class TrainerBase():
             for side, batcher in self._batchers.items():
                 if self._pingpong.active and side != self._pingpong.side:
                     continue
-                loss[side] = batcher.train_one_batch()
-                # if not do_preview and not do_timelapse:
-                #     continue
-                # if do_preview:
-                #     batcher.generate_preview(do_preview)
-                #     self._samples.images[side] = batcher.compile_sample(None)
-                # if do_timelapse:
-                #     self._timelapse.get_sample(side, timelapse_kwargs)
+                loss[side] = batcher.train_one_batch(data_only, data_syn)
+                if not do_preview and not do_timelapse:
+                    continue
+                if do_preview:
+                    batcher.generate_preview(do_preview)
+                    self._samples.images[side] = batcher.compile_sample(None)
+                if do_timelapse:
+                    self._timelapse.get_sample(side, timelapse_kwargs)
 
-            # self._model.state.increment_iterations()
+            self._model.state.increment_iterations()
 
-        #     for side, side_loss in loss.items():
-        #         self._store_history(side, side_loss)
-        #         self._log_tensorboard(side, side_loss)
+            for side, side_loss in loss.items():
+                self._store_history(side, side_loss)
+                self._log_tensorboard(side, side_loss)
 
-        #     if not self._pingpong.active:
-        #         self.__print_loss(loss)
-        #     else:
-        #         for key, val in loss.items():
-        #             self._pingpong.loss[key] = val
-        #         self.__print_loss(self._pingpong.loss)
+            if not self._pingpong.active:
+                self.__print_loss(loss)
+            else:
+                for key, val in loss.items():
+                    self._pingpong.loss[key] = val
+                self.__print_loss(self._pingpong.loss)
 
-        #     if do_preview:
-        #         samples = self._samples.show_sample()
-        #         if samples is not None:
-        #             viewer(samples, "Training - 'S': Save Now. 'ENTER': Save and Quit")
+            if do_preview:
+                samples = self._samples.show_sample()
+                if samples is not None:
+                    viewer(samples, "Training - 'S': Save Now. 'ENTER': Save and Quit")
 
-        #     if do_timelapse:
-        #         self._timelapse.output_timelapse()
+            if do_timelapse:
+                self._timelapse.output_timelapse()
 
-        #     if do_snapshot:
-        #         self._model.do_snapshot()
+            if do_snapshot:
+                self._model.do_snapshot()
         except Exception as err:
             raise err
 
@@ -396,6 +396,20 @@ class Batcher():
         self._timelapse_feed = None
         self._set_preview_feed()
 
+        self.model_inputs = [np.zeros(
+            (batch_size,
+             self._model.input_shape[0],
+             self._model.input_shape[1],
+             self._model.input_shape[2])
+        )]
+        
+        self.model_targets = [np.zeros(
+            (batch_size,
+             self._model.output_shapes[0][0],
+             self._model.output_shapes[0][1],
+             self._model.output_shapes[0][2])
+        )]
+
     def _load_generator(self):
         """ Load the :class:`lib.training_data.TrainingDataGenerator` for this batcher """
         logger.debug("Loading generator: %s", self._side)
@@ -408,7 +422,7 @@ class Batcher():
                                           self._config)
         return generator
 
-    def train_one_batch(self):
+    def train_one_batch(self, data_only, data_syn):
         """ Train on a single batch of images for this :class:`Batcher`
 
         Returns
@@ -417,23 +431,31 @@ class Batcher():
             The list of loss values (as ``float``) for this batch
         """
         logger.trace("Training one step: (side: %s)", self._side)
-        model_inputs, model_targets = self._get_next()
-        loss = [0]
-        # try:
-        #     loss = self._model.predictors[self._side].train_on_batch(model_inputs, model_targets)
-        # except tf_errors.ResourceExhaustedError as err:
-        #     msg = ("You do not have enough GPU memory available to train the selected model at "
-        #            "the selected settings. You can try a number of things:"
-        #            "\n1) Close any other application that is using your GPU (web browsers are "
-        #            "particularly bad for this)."
-        #            "\n2) Lower the batchsize (the amount of images fed into the model each "
-        #            "iteration)."
-        #            "\n3) Try 'Memory Saving Gradients' and/or 'Optimizer Savings' and/or 'Ping "
-        #            "Pong Training'."
-        #            "\n4) Use a more lightweight model, or select the model's 'LowMem' option "
-        #            "(in config) if it has one.")
-        #     raise FaceswapError(msg) from err
-        # loss = loss if isinstance(loss, list) else [loss]
+        if data_syn:
+            model_inputs = self.model_inputs
+            model_targets = self.model_targets
+        else:
+            model_inputs, model_targets = self._get_next()
+        
+        if data_only:
+            loss = [0]
+        else:
+            try:
+                loss = self._model.predictors[self._side].train_on_batch(model_inputs, model_targets)
+            except tf_errors.ResourceExhaustedError as err:
+                msg = ("You do not have enough GPU memory available to train the selected model at "
+                       "the selected settings. You can try a number of things:"
+                       "\n1) Close any other application that is using your GPU (web browsers are "
+                       "particularly bad for this)."
+                       "\n2) Lower the batchsize (the amount of images fed into the model each "
+                       "iteration)."
+                       "\n3) Try 'Memory Saving Gradients' and/or 'Optimizer Savings' and/or 'Ping "
+                       "Pong Training'."
+                       "\n4) Use a more lightweight model, or select the model's 'LowMem' option "
+                       "(in config) if it has one.")
+                raise FaceswapError(msg) from err
+            loss = loss if isinstance(loss, list) else [loss]
+
         return loss
 
     def _get_next(self):

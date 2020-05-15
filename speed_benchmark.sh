@@ -6,8 +6,8 @@ MONITOR_INTERVAL=1
 DIR_A="data/faces/trump"
 DIR_B="data/faces/fauci"
 DIR_M="model_benchmark"
-NUM_ITER=200
-MODEL_NAME="dfaker"
+NUM_ITER=100
+MODEL_NAME="dfl-sae"
 
 mkdir -p "benchmark/"${NAME_MACHINE}
 

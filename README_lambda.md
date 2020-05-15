@@ -31,11 +31,8 @@ python setup.py
 __Face Detection__
 
 ```
-python faceswap.py extract -i /tmp/chuan/faceswap/data/src/trump/trump.mp4 -o /tmp/chuan/faceswap/data/faces/trump --masker unet-dfl --extract-every-n 3
-python faceswap.py extract -i /tmp/chuan/faceswap/data/src/fauci/fauci.mp4 -o /tmp/chuan/faceswap/data/faces/fauci --masker unet-dfl --extract-every-n 10
-
-python faceswap.py extract -i ~/faceswap/data/src/trump/trump.mp4 -o ~/faceswap/data/faces/trump --masker unet-dfl --extract-every-n 3
-python faceswap.py extract -i ~/faceswap/data/src/fauci/fauci.mp4 -o ~/faceswap/data/faces/fauci --masker unet-dfl --extract-every-n 10
+python faceswap.py extract -i data/src/trump/trump.mp4 -o data/faces/trump --masker unet-dfl && \
+python faceswap.py extract -i data/src/fauci/fauci.mp4 -o data/faces/fauci --masker unet-dfl
 ```
 
 __Train__
@@ -46,7 +43,7 @@ python faceswap.py train \
 -A /tmp/chuan/faceswap/data/faces/trump \
 -B /tmp/chuan/faceswap/data/faces/fauci \
 -m /tmp/chuan/faceswap/trump_fauci_model_realface/ \
--g 1 -nac -nf -it 200 -L DEBUG -t dfaker -bs 256
+-g 1 -nac -nf -it 200 -L DEBUG -t dfl-sae -bs 256
 
 
 rm -rf ~/faceswap/trump_fauci_model_realface/ && \
@@ -54,12 +51,12 @@ python faceswap.py train \
 -A ~/faceswap/data/faces/trump \
 -B ~/faceswap/data/faces/fauci \
 -m ~/faceswap/trump_fauci_model_realface/ \
--g 1 -nac -nf -it 20 -L DEBUG -t dfaker -bs 256
+-g 1 -nac -nf -it 20 -L DEBUG -t dfl-sae -bs 256
 
 rm -rf ~/faceswap/trump_fauci_model_realface/ && \
 python faceswap.py train \
 -A ~/faceswap/data/faces/trump \
 -B ~/faceswap/data/faces/fauci \
 -m ~/faceswap/trump_fauci_model_realface/ \
--g 2 -nac -nf -it 20 -L DEBUG -t dfaker -bs 512
+-g 2 -nac -nf -it 20 -L DEBUG -t dfl-sae -bs 512
 ```

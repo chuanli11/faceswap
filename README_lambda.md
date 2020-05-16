@@ -60,3 +60,14 @@ python faceswap.py train \
 -m ~/faceswap/trump_fauci_model_realface/ \
 -g 2 -nac -nf -it 20 -L DEBUG -t dfl-sae -bs 512
 ```
+
+
+__Benchmark__
+
+```
+./speed_benchmark.sh
+```
+
+__Use Mask__
+
+Need to set `mask_type` and `learn_mask` accordingly in `config/train.ini`

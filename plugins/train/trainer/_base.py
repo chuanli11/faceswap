@@ -396,19 +396,48 @@ class Batcher():
         self._timelapse_feed = None
         self._set_preview_feed()
 
-        self.model_inputs = [np.zeros(
-            (batch_size,
-             self._model.input_shape[0],
-             self._model.input_shape[1],
-             self._model.input_shape[2])
-        )]
-        
-        self.model_targets = [np.zeros(
-            (batch_size,
-             self._model.output_shapes[0][0],
-             self._model.output_shapes[0][1],
-             self._model.output_shapes[0][2])
-        )]
+        if use_mask:
+            self.model_inputs = [
+            np.zeros(
+                (batch_size,
+                 self._model.input_shape[0],
+                 self._model.input_shape[1],
+                 self._model.input_shape[2])
+            ),
+            np.zeros(
+                (batch_size,
+                 self._model.input_shape[0],
+                 self._model.input_shape[1],
+                 1)
+            )]
+            
+            self.model_targets = [
+            np.zeros(
+                (batch_size,
+                 self._model.output_shapes[0][0],
+                 self._model.output_shapes[0][1],
+                 self._model.output_shapes[0][2])
+            ),
+            np.zeros(
+                (batch_size,
+                 self._model.output_shapes[0][0],
+                 self._model.output_shapes[0][1],
+                 1)
+            )]
+        else:
+            self.model_inputs = [np.zeros(
+                (batch_size,
+                 self._model.input_shape[0],
+                 self._model.input_shape[1],
+                 self._model.input_shape[2])
+            )]
+            
+            self.model_targets = [np.zeros(
+                (batch_size,
+                 self._model.output_shapes[0][0],
+                 self._model.output_shapes[0][1],
+                 self._model.output_shapes[0][2])
+            )]
 
     def _load_generator(self):
         """ Load the :class:`lib.training_data.TrainingDataGenerator` for this batcher """

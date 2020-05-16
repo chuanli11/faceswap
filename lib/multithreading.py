@@ -7,6 +7,8 @@ from multiprocessing import cpu_count
 import queue as Queue
 import sys
 import threading
+import time
+
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -129,8 +131,8 @@ class BackgroundGenerator(MultiThread):
     def __init__(self, generator, prefetch=1, thread_count=2,
                  queue=None, args=None, kwargs=None):
         # pylint:disable=too-many-arguments
-        # thread_count=2
-        # prefetch=1
+        thread_count=2
+        prefetch=48
 
         super().__init__(target=self._run, thread_count=thread_count)
         self.queue = queue or Queue.Queue(prefetch)
@@ -148,6 +150,7 @@ class BackgroundGenerator(MultiThread):
             for item in self.generator(*self._gen_args, **self._gen_kwargs):
                 self.queue.put(item)
             self.queue.put(None)
+            time.sleep(0.01)
         except Exception:
             self.queue.put(None)
             raise

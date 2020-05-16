@@ -54,16 +54,17 @@ benchmark() {
 }
 
 
-for num_gpu in 1 2 4 8 16
+for num_gpu in 16
 do
 	bs=$((NUM_IMAGE_PER_GPU*num_gpu))
 	
-	# Train with real data
-	output_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_real.txt"
-	gpu_monitor_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_real_monitor.csv"
-	
-	benchmark $bs $num_gpu "real" $output_file $gpu_monitor_file
+	## Train with real data
+	#output_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_real.txt"
+	#gpu_monitor_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_real_monitor.csv"
+	#
+	#benchmark $bs $num_gpu "real" $output_file $gpu_monitor_file
 
+	# Train with syn data
 	output_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_syn.txt"
 	gpu_monitor_file="benchmark/"${NAME_MACHINE}"_"${MODEL_NAME}"/"${NAME_MACHINE}"_gpu_"${num_gpu}"_bs_"${bs}"_syn_monitor.csv"
 

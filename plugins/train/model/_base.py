@@ -323,7 +323,10 @@ class ModelBase():
         logger.debug("Adding predictor: (side: '%s', model: %s)", side, model)
         if self.gpus > 1:
             logger.debug("Converting to multi-gpu: side %s", side)
-            model = multi_gpu_model(model, self.gpus)
+            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            model = multi_gpu_model(model, self.gpus, cpu_merge=False)
+            print(model)
+            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         self.predictors[side] = model
         if not self.state.inputs:
             self.store_input_shapes(model)

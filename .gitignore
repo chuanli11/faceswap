@@ -41,5 +41,5 @@
 *.ini
 *.pyc
 __pycache__/
-!benchmark/
-!benchmark/*
+# !benchmark/
+# !benchmark/*

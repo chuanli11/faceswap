@@ -54,7 +54,7 @@ benchmark() {
 }
 
 
-for num_gpu in 16
+for num_gpu in 1
 do
 	bs=$((NUM_IMAGE_PER_GPU*num_gpu))
 	

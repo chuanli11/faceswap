@@ -325,6 +325,9 @@ class ModelBase():
             logger.debug("Converting to multi-gpu: side %s", side)
             print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             model = multi_gpu_model(model, self.gpus, cpu_merge=False)
+            # strategy = tf.distribute.MirroredStrategy()
+            # with strategy.scope():
+            #   some stuff here
             print(model)
             print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         self.predictors[side] = model

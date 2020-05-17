@@ -50,15 +50,19 @@ rm -rf ~/faceswap/trump_fauci_model_realface/ && \
 python faceswap.py train \
 -A ~/faceswap/data/faces/trump \
 -B ~/faceswap/data/faces/fauci \
+--alignments-A=~/faceswap/data/src/trump/trump_alignments.fsa \
+--alignments-B=~/faceswap/data/src/fauci/fauci_alignments.fsa \
 -m ~/faceswap/trump_fauci_model_realface/ \
--g 1 -nac -nf -it 20 -L DEBUG -t dfl-sae -bs 256
+-g 1 -nac -nf -it 20 -L DEBUG -t dfl-h128 -bs 64
 
 rm -rf ~/faceswap/trump_fauci_model_realface/ && \
 python faceswap.py train \
 -A ~/faceswap/data/faces/trump \
 -B ~/faceswap/data/faces/fauci \
+--alignments-A=~/faceswap/data/src/trump/trump_alignments.fsa \
+--alignments-B=~/faceswap/data/src/fauci/fauci_alignments.fsa \
 -m ~/faceswap/trump_fauci_model_realface/ \
--g 2 -nac -nf -it 20 -L DEBUG -t dfl-sae -bs 512
+-g 2 -nac -nf -it 20 -L DEBUG -t dfl-h128 -bs 128
 ```
 
 

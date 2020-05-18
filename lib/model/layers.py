@@ -10,13 +10,13 @@ import sys
 import inspect
 
 import tensorflow as tf
-import keras.backend as K
+import tensorflow.keras.backend as K
 
-from keras.engine import InputSpec, Layer
-from keras.utils import conv_utils
-from keras.utils.generic_utils import get_custom_objects
-from keras import initializers
-from keras.layers.pooling import _GlobalPooling2D
+from tensorflow.keras.layers import InputSpec, Layer
+from tensorflow.python.keras.utils import conv_utils
+from tensorflow.python.keras.utils.generic_utils import get_custom_objects
+from tensorflow.keras import initializers
+from tensorflow.python.keras.layers.pooling import GlobalPooling2D
 
 if K.backend() == "plaidml.keras.backend":
     from lib.plaidml_utils import pad
@@ -29,7 +29,8 @@ class PixelShuffler(Layer):
     # pylint: disable=C0103
     def __init__(self, size=(2, 2), data_format=None, **kwargs):
         super(PixelShuffler, self).__init__(**kwargs)
-        self.data_format = K.normalize_data_format(data_format)
+        if data_format is None:
+            self.data_format = K.image_data_format()
         self.size = conv_utils.normalize_tuple(size, 2, 'size')
 
     def call(self, inputs, **kwargs):
@@ -193,7 +194,8 @@ class SubPixelUpscaling(Layer):
         super(SubPixelUpscaling, self).__init__(**kwargs)
 
         self.scale_factor = scale_factor
-        self.data_format = K.normalize_data_format(data_format)
+        if data_format is None:
+            self.data_format = K.image_data_format()
 
     def build(self, input_shape):
         pass
@@ -354,7 +356,7 @@ class ReflectionPadding2D(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class GlobalMinPooling2D(_GlobalPooling2D):
+class GlobalMinPooling2D(GlobalPooling2D):
     """Global minimum pooling operation for spatial data.
     # Arguments
         data_format: A string,
@@ -387,7 +389,7 @@ class GlobalMinPooling2D(_GlobalPooling2D):
         return pooled
 
 
-class GlobalStdDevPooling2D(_GlobalPooling2D):
+class GlobalStdDevPooling2D(GlobalPooling2D):
     """Global standard deviation pooling operation for spatial data.
     # Arguments
         data_format: A string,

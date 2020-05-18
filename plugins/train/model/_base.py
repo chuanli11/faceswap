@@ -11,12 +11,12 @@ import time
 
 from concurrent import futures
 
-import keras
-from keras import losses
-from keras import backend as K
-from keras.layers import Input
-from keras.models import load_model, Model
-from keras.utils import get_custom_objects, multi_gpu_model
+from tensorflow import keras
+from tensorflow.keras import losses
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import load_model, Model
+from tensorflow.keras.utils import get_custom_objects, multi_gpu_model
 
 from lib.serializer import get_serializer
 from lib.model.backup_restore import Backup
@@ -26,6 +26,8 @@ from lib.model.nn_blocks import NNBlocks
 from lib.model.optimizers import Adam
 from lib.utils import deprecation_warning, FaceswapError
 from plugins.train._config import Config
+
+import tensorflow as tf
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 _CONFIG = None
@@ -239,25 +241,71 @@ class ModelBase():
         logger.debug("Final coverage_ratio: %s", coverage_ratio)
         return coverage_ratio
 
+    # def build(self):
+    #     """ Build the model. Override for custom build methods """
+    #     self.add_networks()
+    #     self.load_models(swapped=False)
+    #     inputs = self.get_inputs()
+    #     try:
+    #         self.build_autoencoders(inputs)
+    #     except ValueError as err:
+    #         if "must be from the same graph" in str(err).lower():
+    #             msg = ("There was an error loading saved weights. This is most likely due to "
+    #                    "model corruption during a previous save."
+    #                    "\nYou should restore weights from a snapshot or from backup files. "
+    #                    "You can use the 'Restore' Tool to restore from backup.")
+    #             raise FaceswapError(msg) from err
+    #         if "multi_gpu_model" in str(err).lower():
+    #             raise FaceswapError(str(err)) from err
+    #         raise err
+    #     self.log_summary()
+    #     self.compile_predictors(initialize=True)
+
     def build(self):
         """ Build the model. Override for custom build methods """
-        self.add_networks()
-        self.load_models(swapped=False)
-        inputs = self.get_inputs()
-        try:
-            self.build_autoencoders(inputs)
-        except ValueError as err:
-            if "must be from the same graph" in str(err).lower():
-                msg = ("There was an error loading saved weights. This is most likely due to "
-                       "model corruption during a previous save."
-                       "\nYou should restore weights from a snapshot or from backup files. "
-                       "You can use the 'Restore' Tool to restore from backup.")
-                raise FaceswapError(msg) from err
-            if "multi_gpu_model" in str(err).lower():
-                raise FaceswapError(str(err)) from err
-            raise err
-        self.log_summary()
-        self.compile_predictors(initialize=True)
+        if self.gpus > 1:
+          print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+          print(self.gpus)
+          print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+          strategy = tf.distribute.MirroredStrategy(
+              devices=["/gpu:0", "/gpu:1"])
+          with strategy.scope():          
+            self.add_networks()
+            self.load_models(swapped=False)
+            inputs = self.get_inputs()
+            try:
+                self.build_autoencoders(inputs)
+            except ValueError as err:
+                if "must be from the same graph" in str(err).lower():
+                    msg = ("There was an error loading saved weights. This is most likely due to "
+                           "model corruption during a previous save."
+                           "\nYou should restore weights from a snapshot or from backup files. "
+                           "You can use the 'Restore' Tool to restore from backup.")
+                    raise FaceswapError(msg) from err
+                if "multi_gpu_model" in str(err).lower():
+                    raise FaceswapError(str(err)) from err
+                raise err
+            self.log_summary()
+            self.compile_predictors(initialize=True)
+        else:
+          self.add_networks()
+          self.load_models(swapped=False)
+          inputs = self.get_inputs()
+          try:
+              self.build_autoencoders(inputs)
+          except ValueError as err:
+              if "must be from the same graph" in str(err).lower():
+                  msg = ("There was an error loading saved weights. This is most likely due to "
+                         "model corruption during a previous save."
+                         "\nYou should restore weights from a snapshot or from backup files. "
+                         "You can use the 'Restore' Tool to restore from backup.")
+                  raise FaceswapError(msg) from err
+              if "multi_gpu_model" in str(err).lower():
+                  raise FaceswapError(str(err)) from err
+              raise err
+          self.log_summary()
+          self.compile_predictors(initialize=True)
+
 
     def get_inputs(self):
         """ Return the inputs for the model """
@@ -321,15 +369,15 @@ class ModelBase():
     def add_predictor(self, side, model):
         """ Add a predictor to the predictors dictionary """
         logger.debug("Adding predictor: (side: '%s', model: %s)", side, model)
-        if self.gpus > 1:
-            logger.debug("Converting to multi-gpu: side %s", side)
-            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-            model = multi_gpu_model(model, self.gpus, cpu_merge=False)
-            # strategy = tf.distribute.MirroredStrategy()
-            # with strategy.scope():
-            #   some stuff here
-            print(model)
-            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        # if self.gpus > 1:
+        #     logger.debug("Converting to multi-gpu: side %s", side)
+        #     print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        #     model = multi_gpu_model(model, self.gpus, cpu_merge=False)
+        #     # strategy = tf.distribute.MirroredStrategy()
+        #     # with strategy.scope():
+        #     #   some stuff here
+        #     print(model)
+        #     print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         self.predictors[side] = model
         if not self.state.inputs:
             self.store_input_shapes(model)
@@ -797,6 +845,9 @@ class NNMeta():
         self.name = self.set_name()
         self.network = network
         self.is_output = is_output
+        print('++++++++++++')
+        print(self.name)
+        print(network.name)
         self.network.name = self.name
         self.config = network.get_config()  # For pingpong restore
         self.weights = network.get_weights()  # For pingpong restore

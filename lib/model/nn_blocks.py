@@ -9,12 +9,13 @@ import logging
 import tensorflow as tf
 import keras.backend as K
 
-from keras.layers import (add, Add, BatchNormalization, concatenate, Lambda, regularizers,
-                          Permute, Reshape, SeparableConv2D, Softmax, UpSampling2D)
-from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import Conv2D
-from keras.layers.core import Activation
-from keras.initializers import he_uniform, VarianceScaling
+from tensorflow.keras.layers import (add, Add, BatchNormalization, concatenate, Lambda,
+                          Permute, Reshape, SeparableConv2D, Softmax, UpSampling2D,
+                          LeakyReLU, Conv2D)
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.initializers import he_uniform, VarianceScaling
+from tensorflow.keras import regularizers
+
 from .initializers import ICNR, ConvolutionAware
 from .layers import PixelShuffler, SubPixelUpscaling, ReflectionPadding2D, Scale
 from .normalization import GroupNormalization, InstanceNormalization
@@ -145,6 +146,8 @@ class NNBlocks():
             var_x = SubPixelUpscaling(name="{}_subpixel".format(name),
                                       scale_factor=scale_factor)(var_x)
         else:
+            print('xxxxxxxxxxxxxxxxxxxxxx')
+            print(name)
             var_x = PixelShuffler(name="{}_pixelshuffler".format(name), size=scale_factor)(var_x)
         return var_x
 

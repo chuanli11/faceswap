@@ -54,7 +54,8 @@ class ScriptExecutor():  # pylint:disable=too-few-public-methods
             If Tensorflow is not found, or is not between versions 1.12 and 1.15
         """
         min_ver = 1.12
-        max_ver = 1.15
+        # max_ver = 1.15
+        max_ver = 2.2
         try:
             # Ensure tensorflow doesn't pin all threads to one core when using Math Kernel Library
             os.environ["KMP_AFFINITY"] = "disabled"

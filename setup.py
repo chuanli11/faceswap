@@ -269,7 +269,8 @@ class Environment():
         if not self.enable_cuda:
             self.required_packages.append("tensorflow==1.15.0")
         else:
-            self.required_packages.append("tensorflow-gpu==1.15.0")
+            # self.required_packages.append("tensorflow-gpu==1.15.0")
+            self.required_packages.append("tensorflow-gpu==2.2.0")
 
     def update_amd_dep(self):
         """ Update amd dependency for AMD cards """
